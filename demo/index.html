@@ -1,28 +1,30 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><script>(()=>{const T=1795431016*1000,start=Date.now(),R=Date;const F=function(...a){return a.length?new R(...a):new R(T+(R.now()-start))};F.now=()=>T+(R.now()-start);F.UTC=R.UTC;F.parse=R.parse;F.prototype=R.prototype;window.Date=F})();</script>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><script>/* Demo: the clock runs from the snapshot time, so ages and the timeline look as they did. */
+(()=>{const S=window.__MTV_SNAPSHOT;if(!S)return;const T=S.snapshot_at*1000,t0=Date.now(),R=Date;
+ const F=function(...a){return a.length?new R(...a):new R(T+(R.now()-t0))};F.now=()=>T+(R.now()-t0);F.UTC=R.UTC;F.parse=R.parse;F.prototype=R.prototype;window.Date=F})();</script>
 <title>mtv demo · tenkm.org</title>
 <meta name="description" content="A read-only snapshot of a 10km agent loop in mtv, the monkey televisor.">
 <link rel="icon" href="data:,">
-<script src="vendor/echarts.min.js"></script><script>
-/* tenkm.org demo: answers mtv's API from a static snapshot of the bruckert-10km loop. Read-only. */
-(()=>{const real=window.fetch.bind(window);let SNAP=null;
- const get=async()=>SNAP||(SNAP=await (await real('snapshot.json')).json());
+<script src="vendor/echarts.min.js"></script>
+<script src="snapshot.js"></script>
+<script>
+/* Demo: answers mtv's API from window.__MTV_SNAPSHOT. Read-only. */
+(()=>{const real=window.fetch.bind(window);
  const J=(o,st)=>new Response(JSON.stringify(o),{status:st||(o==null?404:200),headers:{'Content-Type':'application/json',ETag:'"snap"'}});
  const page=(R,q)=>{const off=+q.get('offset')||0,lim=+q.get('limit')||50;return {total:R.length,offset:off,rows:R.slice(off,off+lim)}};
- window.__demoNow=null;
- window.fetch=async(u,o)=>{const url=new URL(u,location.href);if(!url.pathname.includes('/api/'))return real(u,o);
-  const S=await get();const parts=url.pathname.split('/api/')[1].split('/');const q=url.searchParams;
+ window.fetch=async(u,o)=>{const url=new URL(u,location.href);if(!url.pathname.includes('/api/'))return real(u,o);const S=window.__MTV_SNAPSHOT;
+  if(!S)return J({error:'Demo snapshot (snapshot.js) not loaded.'},500);
+  const parts=url.pathname.split('/api/').pop().split('/'),q=url.searchParams;
   if(o&&o.method==='POST')return J({error:'This is a read-only demo: actions are off.'},403);
-  if(parts[0]==='loops')return J({version:'0.1.0',loops:[{id:'bruckert-10km',name:'bruckert-10km',escalations:S.live.escalations.filter(x=>x.assignee_role==='operator').length}],actions:S.live.actions});
+  if(parts[0]==='loops')return J({version:S.mtv,loops:[{id:S.live.id,name:S.live.name,escalations:S.live.escalations.filter(x=>x.assignee_role==='operator').length}],actions:S.live.actions});
   const k=parts[1];
   if(k==='live'){if(o&&o.headers&&o.headers['If-None-Match']==='"snap"')return new Response(null,{status:304,headers:{ETag:'"snap"'}});return J(S.live)}
   if(k==='metrics')return J(S.metrics[q.get('by')]||S.metrics.cycle);
-  if(k==='timeline'){const fr=+q.get('from')||0,to=+q.get('to')||1e12;const t=Object.assign({},S.timeline);t.rows=S.timeline.rows.filter(r=>r.e>=fr&&r.s<=to);t.total=t.rows.length;return J(t)}
+  if(k==='timeline'){const fr=+q.get('from')||0,to=+q.get('to')||1e12,t=Object.assign({},S.timeline);t.rows=S.timeline.rows.filter(r=>r.e>=fr&&r.s<=to);t.total=t.rows.length;return J(t)}
   if(k==='cycles'){const s=(q.get('q')||'').toLowerCase();return J(page(S.cycles.rows.filter(c=>!s||(c.headline||'').toLowerCase().includes(s)),q))}
   if(k==='issues'){const s=(q.get('q')||'').toLowerCase(),ty=q.get('type'),st=q.get('status'),to=q.get('assignee_role'),fr=q.get('assigner_role');
    return J(page(S.issues.rows.filter(i=>(!ty||ty==='all'||i.type===ty)&&(!st||st==='all'||i.status===st)&&(!to||i.assignee_role===to)&&(!fr||i.assigner_role===fr)&&(!s||(i.title||'').toLowerCase().includes(s)||((S.issue[i.id]||{}).description||'').toLowerCase().includes(s))),q))}
   if(k==='audits'||k==='docs')return J(S[k]);
-  if(k==='cycle'||k==='audit')return J(S[k][q.get('id')]||null);
-  if(k==='task'||k==='issue')return J(S[k][q.get('id')]||null);
+  if(k==='cycle'||k==='audit'||k==='task'||k==='issue')return J(S[k][q.get('id')]||null);
   if(k==='session')return J(S.session[q.get('name')]||null);
   if(k==='log')return J(S.log[q.get('session')]||{exists:false,events:[]});
   if(k==='status')return J(S.status);
@@ -141,9 +143,10 @@ body[data-theme="Forest"]{--page-ink:#141a17;--page-ink2:#1a221e;--page-ink3:#24
 .oesc{margin:0 0 18px;padding:10px 14px;border:1px solid var(--page-line)}.oesc h2{margin-bottom:6px}
 .tlc{display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap;margin-bottom:8px}.rng{position:relative;height:30px;background:var(--page-ink2);border:1px solid var(--page-line);border-radius:3px;cursor:pointer;touch-action:none;user-select:none;margin:4px 6px 2px}.rng canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.rsel{position:absolute;top:-1px;bottom:-1px;min-width:14px;box-sizing:border-box;background:color-mix(in srgb,var(--page-lime) 16%,transparent);border:1px solid var(--page-lime);border-radius:3px;cursor:grab}.rng.drag .rsel{cursor:grabbing}.rh{position:absolute;top:3px;bottom:3px;width:8px;background:var(--page-lime);border-radius:2px;cursor:ew-resize}.rl{left:-5px}.rr{right:-5px}.rsel:focus-visible,.rh:focus-visible{outline:2px solid var(--page-bone);outline-offset:1px}.rax{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:10px;margin:0 6px 10px}.lnk{background:none;border:0;padding:0 3px;font:inherit;font-size:11px;color:var(--page-dim);cursor:pointer}.lnk:hover{color:var(--page-bone)}.lnk.on{color:var(--page-bone);font-weight:600;text-decoration:underline}
 button.b.kill:not([disabled]){color:var(--page-red);border-color:color-mix(in srgb,var(--page-red) 45%,var(--page-line))}
-</style></head><body><div id="demo-banner">mtv demo · a read-only snapshot of the <b>bruckert-10km</b> loop, taken <span id="snapt"></span> · <a href="../">tenkm.org</a> · <a href="https://github.com/pingdynasty/mtv">mtv on GitHub</a></div>
+</style></head><body><div id="demo-banner">mtv demo · a read-only snapshot of the <b id="snapn"></b> loop, taken <span id="snapt"></span> · <a href="../">tenkm.org</a> · <a href="https://github.com/pingdynasty/mtv">mtv on GitHub</a></div>
 <style>#demo-banner{position:sticky;top:0;z-index:50;font:13px var(--page-sans);background:var(--page-lime);color:var(--page-on,#fff);padding:6px 14px;text-align:center}#demo-banner a{color:inherit;text-decoration:underline}#demo-banner b{font-weight:600}</style>
-<script>fetch('snapshot.json').then(r=>r.json()).then(s=>{const d=new Date(s.snapshot_at*1000);document.getElementById('snapt').textContent=d.toLocaleString([], {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'})})</script>
+<script>(()=>{const S=window.__MTV_SNAPSHOT;if(!S)return;document.getElementById('snapn').textContent=S.live.name;
+ document.getElementById('snapt').textContent=new Date(S.snapshot_at*1000).toLocaleString([],{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'})})()</script>
 
 <div class="app"><aside class="side"><div class="brand">mtv<span id="lname"></span></div><div id="loopsw"></div>
 <button class="launch" onclick="go('launch')">+ launch session</button><div id="tree"></div><div class="live" id="live">connecting…</div></aside>
@@ -200,7 +203,7 @@ async function load(force){try{if(!LOOPS)await loops();if(!LOOP){$('#main').inne
   ETAG=r.headers.get('ETag')||'';S=await r.json();GEN++;
   $('#live').textContent='updated '+hm(new Date())+(S.actions.enabled?' · actions on':' · read-only');$('#lname').textContent=' / '+S.name;document.title='mtv · '+S.name;
   if(force==='init'&&!LS.get('mtv-mb')&&S.counts.cycles>150)MB='day';
-  if(force==='init'){const [v,a]=fromHash();view=V[v]?v:'dash';arg=a}tree();if(force||!document.querySelector('#main textarea:focus, #main input:focus, #rng.drag')){const y=scrollY;ANIM=!!force;render();scrollTo(0,y)}}catch(e){if(String(e.message)!=='401')$('#live').textContent='server unreachable'}}
+  if(force==='init'){const [v,a]=fromHash();view=V[v]?v:'dash';arg=a}tree();if(force||!document.querySelector('#main textarea:focus, #main input:focus, #rng.drag')){const y=scrollY;ANIM=!!force;render();scrollTo(0,y)}}catch(e){if(String(e.message)==='401')return;$('#live').textContent='server unreachable';if(!S)$('#main').innerHTML=`<div class="crumb">MTV</div><h1>Can't reach mtv's server.</h1><div class="warn">${esc(String(e&&e.message||e))}</div><p class="dim">mtv retries every few seconds.</p>`}}
 async function act(cmd,body,label){const r=await api('/api/action/'+cmd,body||{});if(r.error){toast(r.error+(r.argv?' — '+r.argv.join(' '):''));return r}toast((r.code===0?'✓ ':'✗ ')+(label||r.argv.join(' ')));setTimeout(()=>load(true),800);return r}
 const curC=()=>S.cycle||{};const openEsc=()=>S.escalations.filter(x=>x.assignee_role==='operator');const otherEsc=()=>S.escalations.filter(x=>x.assignee_role!=='operator');
 function it(label,v,a,led,cls=''){const on=view===v&&String(arg)===String(a)?' on':'';return `<div class="it ${cls}${on}" role="link" tabindex="0" title="${esc(label)}" onclick="go('${v}',${a===null?'null':`'${a}'`})">${led?`<i class="led ${led}"></i>`:''}${esc(label)}</div>`}
@@ -317,7 +320,7 @@ audit(id){const a=get('a:'+id,'/api/audit?id='+id);if(!a)return LOADING;if(a.err
 goals(){const d=get('docs','/api/docs');if(!d)return LOADING;return `<div class="crumb">central/loop</div><div class="g"><div class="c s6"><div class="md">${md(d.GOALS)}</div></div><div class="c s6"><div class="md">${md(d.PLAN)}</div></div><div class="c s12"><div class="md">${md(d.LEARNINGS)}</div></div></div>`},
 status(){return `<div class="crumb">10km status</div><h1>Status report</h1><button class="b" id="stbtn" onclick="refreshStatus()">refresh</button> <span class="mono dim" id="stat">${STATUS_AT?'as of '+hm(STATUS_AT):''}</span><pre class="rep" id="rep">running 10km status…</pre>`},
 launch(){return `<div class="crumb">LAUNCH SESSION</div><h1>Start an operator session</h1>
- <div style="max-width:620px"><label>USERNAME</label><input id="u" value="${esc(LS.get('mtv-user')||'klamart')}" oninput="lc()">
+ <div style="max-width:620px"><label>USERNAME</label><input id="u" value="${esc(LS.get('mtv-user')||'')}" placeholder="your username" oninput="lc()">
  <label>MODE</label><div class="seg"><button class="b on" id="m2" onclick="mode(2)">no agent</button></div>
  <label>FIRST MESSAGE (optional; makes it one-shot)</label><textarea id="msg" oninput="lc()" placeholder="e.g. Merge origin/main into the loop branch"></textarea>
  <div class="cmd" id="lcmd"></div><button class="b p" id="lb" onclick="doLaunch()">launch</button><button class="b" onclick="go('dash')">cancel</button>
