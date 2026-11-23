@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>10km · ten thousand monkeys typing in a sandbox</title>
+<meta name="description" content="10km is a lightweight agent loop: Planner, Workers, Curator and Auditor, run by a simple state machine. mtv is its web console.">
+<style>
+:root{--page-bg:#ffffff;--page-ink:#1d2329;--page-dim:#5f6670;--page-line:#e4e1d9;--page-soft:#f6f5f1;--page-acc:#1f4e8c;
+--page-serif:'Source Serif 4',Charter,'Iowan Old Style',Georgia,serif;--page-sans:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;--page-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--page-bg);color:var(--page-ink);font:17px/1.6 var(--page-sans)}
+.w{max-width:980px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--page-line)}header .w{display:flex;justify-content:space-between;align-items:center;height:56px}
+.brand{font:600 22px var(--page-serif);letter-spacing:-.3px}nav a{color:var(--page-dim);text-decoration:none;margin-left:20px;font-size:15px}nav a:hover{color:var(--page-ink)}
+.hero{padding:72px 0 40px}h1{font:600 clamp(36px,6vw,64px)/1.05 var(--page-serif);letter-spacing:-1px;margin:0 0 18px;max-width:14ch}
+.lede{font-size:20px;color:var(--page-dim);max-width:40em;margin:0 0 28px}
+.btn{display:inline-block;background:var(--page-acc);color:#fff;text-decoration:none;padding:11px 20px;border-radius:4px;font-weight:600;margin-right:12px}.btn.o{background:none;color:var(--page-acc);border:1px solid var(--page-acc)}
+.shot{display:block;margin:40px 0 8px;border:1px solid var(--page-line);border-radius:6px;overflow:hidden;box-shadow:0 1px 0 var(--page-line)}.shot iframe{display:block;width:100%;height:640px;border:0}
+.cap{font-size:14px;color:var(--page-dim)}
+section{padding:44px 0;border-top:1px solid var(--page-line)}h2{font:600 30px/1.2 var(--page-serif);margin:0 0 14px;letter-spacing:-.3px}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border-top:1px solid var(--page-line);margin-top:18px}
+.roles div{padding:16px 18px 16px 0;border-bottom:1px solid var(--page-line)}.roles b{display:block;font:600 18px var(--page-serif)}.roles span{color:var(--page-dim);font-size:15px}
+.num{display:flex;flex-wrap:wrap;gap:8px 40px;margin:18px 0 0}.num div b{display:block;font:600 34px var(--page-serif)}.num div span{color:var(--page-dim);font-size:14px}
+pre{background:var(--page-soft);border:1px solid var(--page-line);border-radius:4px;padding:14px 16px;overflow-x:auto;font:14px/1.5 var(--page-mono)}
+footer{border-top:1px solid var(--page-line);padding:28px 0 48px;color:var(--page-dim);font-size:14px}footer a{color:inherit}
+@media(max-width:600px){.shot iframe{height:520px}nav a{margin-left:12px}}
+</style></head><body>
+<header><div class="w"><div class="brand">10km</div><nav><a href="demo/">Demo</a><a href="https://github.com/pingdynasty/10km">10km</a><a href="https://github.com/pingdynasty/mtv">mtv</a></nav></div></header>
+<main>
+<div class="w hero">
+<h1>Ten thousand monkeys, typing in a sandbox.</h1>
+<p class="lede">10km is a lightweight agent loop. A Planner turns your goals into tasks, Workers do them, a Curator checks and merges the work, and an Auditor improves the loop itself. You stay the operator, and the loop asks you only when it has to.</p>
+<a class="btn" href="demo/">Open the demo</a><a class="btn o" href="https://github.com/pingdynasty/10km">Get 10km</a>
+<a class="shot" href="demo/" aria-label="Open the demo"><iframe src="demo/" title="mtv demo" loading="lazy" tabindex="-1" style="pointer-events:none"></iframe></a>
+<div class="cap">mtv showing a real loop, <b>bruckert-10km</b>, as it was on 23 November 2026. The demo is read-only.</div>
+</div>
+<section><div class="w">
+<h2>Four roles and you</h2>
+<p>Work happens in cycles, managed by a small state machine. Sessions run in parallel, with any harness or coding agent, cloud or local models.</p>
+<div class="roles"><div><b>Planner</b><span>Refines the plan into tasks for the next cycle.</span></div><div><b>Workers</b><span>Do the tasks, each in its own worktree.</span></div><div><b>Curator</b><span>Validates the work and merges it, or escalates.</span></div><div><b>Auditor</b><span>Inspects the loop and improves how it runs.</span></div></div>
+</div></section>
+<section><div class="w">
+<h2>The demo loop has run for six days, porting synth patches to hardware</h2>
+<p>bruckert-10km ports Max Bruckert's GEN patches to the Rebel Technology OWL devices, from both the Faust ports and the Max exports, and builds a playable web page for each device.</p>
+<div class="num"><div><b>25</b><span>cycles</span></div><div><b>58</b><span>tasks accepted</span></div><div><b>125</b><span>agent sessions</span></div><div><b>$329</b><span>in model usage</span></div></div>
+<p style="margin-top:22px"><a href="demo/">Browse its cycles, tasks, escalations, audits and cost →</a></p>
+</div></section>
+<section><div class="w">
+<h2>mtv, the monkey televisor</h2>
+<p>mtv is 10km's web console. Escalations come first, then the loop's state, its sessions on a timeline, cost per cycle, hour, day or month, and the whole history. With actions on, you can answer escalations and stop, kill, start or resume the loop from the page. Python standard library only.</p>
+<pre>pip install git+https://github.com/pingdynasty/mtv
+mtv ~/devel/myloop --open</pre>
+</div></section>
+<section><div class="w">
+<h2>Run a loop</h2>
+<pre>docker build --build-arg AGENTS="claude kiro" -t 10km .
+docker run -d --name myloop -e AGENT=claude -e LOOP_NAME=myloop \
+  -v myloop-home:/home/monkey 10km
+docker exec -it myloop claude          # log in once
+docker exec -it myloop 10km kickoff</pre>
+<p>10km is designed to run in a sandbox and to work well with small models. See the <a href="https://github.com/pingdynasty/10km">README</a> for running it on a host.</p>
+</div></section>
+</main>
+<footer><div class="w">10km and mtv are MIT licensed. mtv bundles Apache ECharts (Apache-2.0). © 2026 Martin Klang · <a href="https://github.com/pingdynasty">pingdynasty</a></div></footer>
+</body></html>
