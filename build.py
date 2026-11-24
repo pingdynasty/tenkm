@@ -249,7 +249,9 @@ SHIM = r"""<script src="snapshot.js"></script>
 
 CLOCK = """<script>/* Demo: the clock stands still at the moment the loop stopped, so ages, durations and the timeline read as they did then. */
 (()=>{const S=window.__MTV_SNAPSHOT;if(!S)return;const T=S.snapshot_at*1000,R=Date;
- const F=function(...a){return a.length?new R(...a):new R(T)};F.now=()=>T;F.UTC=R.UTC;F.parse=R.parse;F.prototype=R.prototype;window.Date=F})();</script>
+ const F=function(...a){return a.length?new R(...a):new R(T)};F.now=()=>T;
+ /* ECharts times its animations with the clock, so with the clock stopped the charts never grow: draw them without animation. */
+ if(window.echarts){const init=echarts.init;echarts.init=function(...a){const c=init.apply(this,a),so=c.setOption;c.setOption=function(o,...r){return so.call(this,o&&typeof o==='object'?Object.assign({},o,{animation:false}):o,...r)};return c}}F.UTC=R.UTC;F.parse=R.parse;F.prototype=R.prototype;window.Date=F})();</script>
 """
 
 BANNER = """<div id="demo-banner"><span>mtv demo · a read-only snapshot of the <b id="snapn"></b> loop, taken <span id="snapt"></span> · <a href="https://github.com/pingdynasty/mtv" target="_blank" rel="noopener">mtv on GitHub</a></span><a id="demo-close" href="../" title="Close the demo and return to tenkm.org" aria-label="Close the demo and return to tenkm.org"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Close</span></a></div>

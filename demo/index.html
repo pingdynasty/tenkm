@@ -29,7 +29,9 @@
 </script>
 <script>/* Demo: the clock stands still at the moment the loop stopped, so ages, durations and the timeline read as they did then. */
 (()=>{const S=window.__MTV_SNAPSHOT;if(!S)return;const T=S.snapshot_at*1000,R=Date;
- const F=function(...a){return a.length?new R(...a):new R(T)};F.now=()=>T;F.UTC=R.UTC;F.parse=R.parse;F.prototype=R.prototype;window.Date=F})();</script>
+ const F=function(...a){return a.length?new R(...a):new R(T)};F.now=()=>T;
+ /* ECharts times its animations with the clock, so with the clock stopped the charts never grow: draw them without animation. */
+ if(window.echarts){const init=echarts.init;echarts.init=function(...a){const c=init.apply(this,a),so=c.setOption;c.setOption=function(o,...r){return so.call(this,o&&typeof o==='object'?Object.assign({},o,{animation:false}):o,...r)};return c}}F.UTC=R.UTC;F.parse=R.parse;F.prototype=R.prototype;window.Date=F})();</script>
 
 <style>
 :root{--page-ink:#ffffff;--page-ink2:#f6f5f1;--page-ink3:#ebe9e3;--page-line:#d9d6ce;--page-bone:#1d2329;--page-dim:#6b7076;--page-lime:#1f4e8c;--page-amber:#b45309;--page-red:#b42318;
