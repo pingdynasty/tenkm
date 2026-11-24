@@ -12,7 +12,8 @@ header{border-bottom:1px solid var(--page-line)}header .w{display:flex;justify-c
 .hero{padding:72px 0 40px}h1{font:600 clamp(36px,6vw,64px)/1.05 var(--page-serif);letter-spacing:-1px;margin:0 0 18px;max-width:14ch}
 .lede{font-size:20px;color:var(--page-dim);max-width:40em;margin:0 0 28px}
 .btn{display:inline-block;background:var(--page-acc);color:#fff;text-decoration:none;padding:11px 20px;border-radius:4px;font-weight:600;margin-right:12px}.btn.o{background:none;color:var(--page-acc);border:1px solid var(--page-acc)}
-.shot{display:block;margin:40px 0 8px;border:1px solid var(--page-line);border-radius:6px;overflow:hidden;box-shadow:0 1px 0 var(--page-line)}.shot iframe{display:block;width:100%;height:640px;border:0}
+.shot{display:block;position:relative;aspect-ratio:16/10;margin:40px 0 8px;border:1px solid var(--page-line);border-radius:6px;overflow:hidden;box-shadow:0 1px 0 var(--page-line)}
+.shot iframe{position:absolute;top:0;left:0;width:1280px;height:800px;border:0;transform-origin:0 0;transform:scale(var(--s,.72))}
 .cap{font-size:14px;color:var(--page-dim)}
 section{padding:44px 0;border-top:1px solid var(--page-line)}h2{font:600 30px/1.2 var(--page-serif);margin:0 0 14px;letter-spacing:-.3px}
 .roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border-top:1px solid var(--page-line);margin-top:18px}
@@ -27,7 +28,7 @@ footer{border-top:1px solid var(--page-line);padding:28px 0 48px;color:var(--pag
 .code:hover .copy,.copy:focus-visible,.copy.done{opacity:1}.copy:hover{color:var(--page-ink);border-color:var(--page-dim)}.copy.done{color:#1a7f37;border-color:#1a7f37}
 @media(hover:none){.copy{opacity:1}}
 @media(max-width:760px){.intro{grid-template-columns:1fr}.intro figure{max-width:260px;margin:0 auto}}
-@media(max-width:600px){.shot iframe{height:520px}nav a{margin-left:12px}}
+@media(max-width:600px){nav a{margin-left:12px}}
 </style></head><body>
 <header><div class="w"><div class="brand">10km</div><nav><a href="demo/">Demo</a><a href="https://github.com/pingdynasty/10km">10km</a><a href="https://github.com/pingdynasty/mtv">mtv</a></nav></div></header>
 <main>
@@ -49,7 +50,7 @@ footer{border-top:1px solid var(--page-line);padding:28px 0 48px;color:var(--pag
 <section><div class="w">
 <h2>Demo loop: five days porting synth patches to hardware</h2>
 <p>Personally, I like my synthesizers modular. I enlisted 10km to port Max Bruckert's excellent Max/MSP patches to the <a href="https://www.rebeltech.org/products/">Rebel Technology OWL devices</a>, along with a playable web version just like <a href="https://sletz.github.io/faust-gen-patches/web/">Stephane Letz's Faust ports</a>.</p>
-<p>Agent loops excel at what I call XYZ projects: when you want an X, like Y, but with Z. By making quality gates deterministic and automating repeated tool use, tokens can be saved for higher judgement tasks.</p>
+<p>Agent loops excel at what I call XYZ projects: when you want an X, like Y, but with Z. Try to make quality gates deterministic, for consistency and so that tokens can be saved for higher judgement tasks. The auditor also helps by automating repeated tool use, and keeping prompts and context files down.</p>
 <div class="num"><div><b>21</b><span>cycles</span></div><div><b>52/56</b><span>tasks accepted</span></div><div><b>108</b><span>agent sessions</span></div><div><b>$285</b><span>in model usage</span></div></div>
 <p>When it had finished I moved the goalpost: make the web version patchable with virtual cables. Because it ain't modular if it ain't got cables. It did, and you can play it here: <a href="https://pingdynasty.github.io/bruckert-gen-patches/web/"><b>OWL Gen Patches</b></a></p>
 <p style="margin-top:22px"><a href="demo/">Browse cycles, tasks, escalations, audits and cost →</a></p>
@@ -71,6 +72,8 @@ mtv ~/devel/myloop --open</pre>
 </main>
 <footer><div class="w">10km and mtv are MIT licensed. © 2026 Martin Klang · <a href="https://github.com/pingdynasty">pingdynasty</a></div></footer>
 <script>
+(()=>{const shot=document.querySelector('.shot');if(shot){const fit=()=>shot.style.setProperty('--s',shot.clientWidth/1280);fit();addEventListener('resize',fit)}})();
+document.querySelectorAll('a[href]').forEach(a=>{if(!a.getAttribute('href').startsWith('#')){a.target='_blank';a.rel='noopener'}});
 (()=>{const ic='<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/></svg>',
 ok='<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>';
 const copy=async t=>{try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}};
