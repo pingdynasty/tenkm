@@ -18,10 +18,14 @@ section{padding:44px 0;border-top:1px solid var(--page-line)}h2{font:600 30px/1.
 .roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border-top:1px solid var(--page-line);margin-top:18px}
 .roles div{padding:16px 18px 16px 0;border-bottom:1px solid var(--page-line)}.roles b{display:block;font:600 18px var(--page-serif)}.roles span{color:var(--page-dim);font-size:15px}
 .num{display:flex;flex-wrap:wrap;gap:8px 40px;margin:18px 0 0}.num div b{display:block;font:600 34px var(--page-serif)}.num div span{color:var(--page-dim);font-size:14px}
-pre{background:var(--page-soft);border:1px solid var(--page-line);border-radius:4px;padding:14px 16px;overflow-x:auto;font:14px/1.5 var(--page-mono)}
+pre{background:var(--page-soft);margin:0;border:1px solid var(--page-line);border-radius:4px;padding:14px 16px;overflow-x:auto;font:14px/1.5 var(--page-mono)}
 footer{border-top:1px solid var(--page-line);padding:28px 0 48px;color:var(--page-dim);font-size:14px}footer a{color:inherit}
 .intro{display:grid;grid-template-columns:1fr 300px;gap:32px;align-items:center}
 .intro figure{margin:0;text-align:center}.intro img{width:100%;height:auto;display:block}.intro figcaption{font-size:14px;color:var(--page-dim);font-style:italic;margin-top:4px}
+.code{position:relative;margin:1em 0}.code pre{padding-right:48px}
+.copy{position:absolute;top:8px;right:8px;display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border:1px solid var(--page-line);border-radius:6px;background:var(--page-bg);color:var(--page-dim);cursor:pointer;opacity:0;transition:opacity .15s}
+.code:hover .copy,.copy:focus-visible,.copy.done{opacity:1}.copy:hover{color:var(--page-ink);border-color:var(--page-dim)}.copy.done{color:#1a7f37;border-color:#1a7f37}
+@media(hover:none){.copy{opacity:1}}
 @media(max-width:760px){.intro{grid-template-columns:1fr}.intro figure{max-width:260px;margin:0 auto}}
 @media(max-width:600px){.shot iframe{height:520px}nav a{margin-left:12px}}
 </style></head><body>
@@ -33,7 +37,7 @@ footer{border-top:1px solid var(--page-line);padding:28px 0 48px;color:var(--pag
 <p class="lede">10km is a lightweight agent loop. It can iterate over a plan like Ralph, optimize to a goal like Karpathy, or do a bit of both. The monkey loop is a generalized loop, which you can be in, on, or outside.</p>
 <a class="btn" href="demo/">Open the demo</a><a class="btn o" href="https://github.com/pingdynasty/10km">Get 10km</a>
 </div>
-<figure><img src="monkey.jpg" width="640" height="640" alt="A monkey at a vintage typewriter, drawn in ink"><figcaption>Some agents type with all eight fingers.</figcaption></figure></div>
+<figure><img src="images/monkey.jpg" width="640" height="640" alt="A monkey at a vintage typewriter, drawn in ink"><figcaption>Some agents type with all eight fingers.</figcaption></figure></div>
 <a class="shot" href="demo/" aria-label="Open the demo"><iframe src="demo/" title="mtv demo" loading="lazy" tabindex="-1" style="pointer-events:none"></iframe></a>
 <div class="cap">Snapshot of the 10km web console showing a real loop building <a href="https://github.com/pingdynasty/bruckert-gen-patches"><b>bruckert-gen-patches</b></a>, as it was on 23 November 2026. The demo is read-only.</div>
 </div>
@@ -66,4 +70,11 @@ mtv ~/devel/myloop --open</pre>
 </div></section>
 </main>
 <footer><div class="w">10km and mtv are MIT licensed. © 2026 Martin Klang · <a href="https://github.com/pingdynasty">pingdynasty</a></div></footer>
+<script>
+(()=>{const ic='<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/></svg>',
+ok='<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>';
+const copy=async t=>{try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}};
+document.querySelectorAll('pre').forEach(pre=>{const w=document.createElement('div');w.className='code';pre.before(w);w.appendChild(pre);const text=pre.textContent.replace(/\s+$/,'')+'\n';const b=document.createElement('button');b.className='copy';b.type='button';b.title='Copy';b.setAttribute('aria-label','Copy to clipboard');b.innerHTML=ic;
+b.onclick=async()=>{await copy(text);b.innerHTML=ok;b.classList.add('done');b.title='Copied!';clearTimeout(b.t);b.t=setTimeout(()=>{b.innerHTML=ic;b.classList.remove('done');b.title='Copy'},2000)};w.appendChild(b)})})();
+</script>
 </body></html>
