@@ -1,7 +1,4 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><script>/* Demo: the clock runs from the snapshot time, so ages and the timeline look as they did. */
-(()=>{const S=window.__MTV_SNAPSHOT;if(!S)return;const T=S.snapshot_at*1000,t0=Date.now(),R=Date;
- const F=function(...a){return a.length?new R(...a):new R(T+(R.now()-t0))};F.now=()=>T+(R.now()-t0);F.UTC=R.UTC;F.parse=R.parse;F.prototype=R.prototype;window.Date=F})();</script>
-<title>mtv demo · tenkm.org</title>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>mtv demo · tenkm.org</title>
 <meta name="description" content="A read-only snapshot of a 10km agent loop in mtv, the monkey televisor.">
 <link rel="icon" href="data:,">
 <script src="vendor/echarts.min.js"></script>
@@ -30,6 +27,9 @@
   if(k==='status')return J(S.status);
   return J(null)}})();
 </script>
+<script>/* Demo: the clock stands still at the moment the loop stopped, so ages, durations and the timeline read as they did then. */
+(()=>{const S=window.__MTV_SNAPSHOT;if(!S)return;const T=S.snapshot_at*1000,R=Date;
+ const F=function(...a){return a.length?new R(...a):new R(T)};F.now=()=>T;F.UTC=R.UTC;F.parse=R.parse;F.prototype=R.prototype;window.Date=F})();</script>
 
 <style>
 :root{--page-ink:#ffffff;--page-ink2:#f6f5f1;--page-ink3:#ebe9e3;--page-line:#d9d6ce;--page-bone:#1d2329;--page-dim:#6b7076;--page-lime:#1f4e8c;--page-amber:#b45309;--page-red:#b42318;
@@ -203,7 +203,7 @@ async function load(force){try{if(!LOOPS)await loops();if(!LOOP){$('#main').inne
   ETAG=r.headers.get('ETag')||'';S=await r.json();GEN++;
   $('#live').textContent='updated '+hm(new Date())+(S.actions.enabled?' · actions on':' · read-only');$('#lname').textContent=' / '+S.name;document.title='mtv · '+S.name;
   if(force==='init'&&!LS.get('mtv-mb')&&S.counts.cycles>150)MB='day';
-  if(force==='init'){const [v,a]=fromHash();view=V[v]?v:'dash';arg=a}tree();if(force||!document.querySelector('#main textarea:focus, #main input:focus, #rng.drag')){const y=scrollY;ANIM=!!force;render();scrollTo(0,y)}}catch(e){if(String(e.message)==='401')return;$('#live').textContent='server unreachable';if(!S)$('#main').innerHTML=`<div class="crumb">MTV</div><h1>Can't reach mtv's server.</h1><div class="warn">${esc(String(e&&e.message||e))}</div><p class="dim">mtv retries every few seconds.</p>`}}
+  if(force==='init'){const [v,a]=fromHash();view=V[v]?v:'dash';arg=a}tree();if(force||!document.querySelector('#main textarea:focus, #main input:focus, #rng.drag')){const y=scrollY;ANIM=!!force;render();scrollTo(0,y)}}catch(e){if(String(e.message)==='401')return;$('#live').textContent='server unreachable';if(!S)$('#main').innerHTML=`<div class="crumb">mtv</div><h1>Can't reach server.</h1><div class="warn">${esc(String(e&&e.message||e))}</div><p class="dim">mtv retries every few seconds.</p>`}}
 async function act(cmd,body,label){const r=await api('/api/action/'+cmd,body||{});if(r.error){toast(r.error+(r.argv?' — '+r.argv.join(' '):''));return r}toast((r.code===0?'✓ ':'✗ ')+(label||r.argv.join(' ')));setTimeout(()=>load(true),800);return r}
 const curC=()=>S.cycle||{};const openEsc=()=>S.escalations.filter(x=>x.assignee_role==='operator');const otherEsc=()=>S.escalations.filter(x=>x.assignee_role!=='operator');
 function it(label,v,a,led,cls=''){const on=view===v&&String(arg)===String(a)?' on':'';return `<div class="it ${cls}${on}" role="link" tabindex="0" title="${esc(label)}" onclick="go('${v}',${a===null?'null':`'${a}'`})">${led?`<i class="led ${led}"></i>`:''}${esc(label)}</div>`}

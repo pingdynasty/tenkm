@@ -20,6 +20,7 @@ snapshot.js is a script, not JSON, so the demo also works opened from disk.
 Standard library only.
 """
 import argparse
+import calendar
 import importlib.util
 import json
 import os
@@ -132,20 +133,58 @@ def repos(root):
     return out
 
 
-def snapshot(data, tmp, root, name, logs, version):
+def iso(t):
+    return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(t))
+
+
+def epoch(s):
+    try:
+        return calendar.timegm(time.strptime(str(s)[:19], '%Y-%m-%dT%H:%M:%S'))
+    except (ValueError, TypeError):
+        return None
+
+
+def stopped_at(L):
+    """When the loop last did anything: the latest timestamp in loop.db and usage.jsonl."""
+    q = ["select updated_at t from loop", "select max(planned_at) t from cycles", "select max(curated_at) t from cycles",
+         "select max(coalesce(curated_at, done_at, started_at, created_at)) t from tasks",
+         "select max(coalesce(resolved_at, answered_at, created_at)) t from issues",
+         "select max(created_at) t from audits", "select max(updated_at) t from sessions"]
+    ts = [epoch((L.q1(s) or {}).get('t')) for s in q]
+    ts += [r['t'] for r in L.usage.rows if r.get('t')]
+    ts = [t for t in ts if t]
+    return max(ts) if ts else time.time()
+
+
+def snapshot(data, tmp, root, name, logs, version, at=None):
     L = data.Loop(tmp, name, name)
     L.repos = lambda max_age=30: repos(root)
+    L.usage.refresh()
+    at = at or stopped_at(L)
+    # The demo's clock is the moment the loop stopped, not the build time: freeze mtv's "now" there too.
+    real_time = data.time.time
+    data.time.time = lambda: at
+    try:
+        return _snapshot(L, logs, version, at)
+    finally:
+        data.time.time = real_time
+
+
+def _snapshot(L, logs, version, at):
     live = L.live()
     for s in live['sessions']:          # process checks mean nothing in a snapshot
         if s['status'] == 'active':
             s['alive'] = True
+    d = live.get('dispatch') or {}
+    for k in ('started_at', 'finished_at'):     # a dispatcher record newer than the snapshot (e.g. a trimmed copy)
+        if epoch(d.get(k)) and epoch(d[k]) > at:
+            d[k] = iso(at)
     live['actions'] = {'enabled': False, 'reason': 'Demo: a read-only snapshot. Actions are off.'}
-    live['loops'] = [{'id': name, 'name': name}]
+    live['loops'] = [{'id': live['id'], 'name': live['name']}]
     live['version'] = version
-    L.usage.refresh()
     names = {r['session'] for r in L.usage.rows if r['session']} | {r['name'] for r in L.q('select name from sessions')}
     api = {
-        'snapshot_at': time.time(), 'mtv': version, 'live': live, 'docs': L.docs(), 'audits': L.audits_list(),
+        'snapshot_at': at, 'mtv': version, 'live': live, 'docs': L.docs(), 'audits': L.audits_list(),
         'metrics': {b: L.metrics({'by': b}) for b in ('cycle', 'hour', 'day', 'month')},
         'timeline': L.timeline({}),
         'cycles': L.cycles_page({'limit': '100000'}),
@@ -208,9 +247,9 @@ SHIM = r"""<script src="snapshot.js"></script>
 </script>
 """
 
-CLOCK = """<script>/* Demo: the clock runs from the snapshot time, so ages and the timeline look as they did. */
-(()=>{const S=window.__MTV_SNAPSHOT;if(!S)return;const T=S.snapshot_at*1000,t0=Date.now(),R=Date;
- const F=function(...a){return a.length?new R(...a):new R(T+(R.now()-t0))};F.now=()=>T+(R.now()-t0);F.UTC=R.UTC;F.parse=R.parse;F.prototype=R.prototype;window.Date=F})();</script>
+CLOCK = """<script>/* Demo: the clock stands still at the moment the loop stopped, so ages, durations and the timeline read as they did then. */
+(()=>{const S=window.__MTV_SNAPSHOT;if(!S)return;const T=S.snapshot_at*1000,R=Date;
+ const F=function(...a){return a.length?new R(...a):new R(T)};F.now=()=>T;F.UTC=R.UTC;F.parse=R.parse;F.prototype=R.prototype;window.Date=F})();</script>
 """
 
 BANNER = """<div id="demo-banner">mtv demo · a read-only snapshot of the <b id="snapn"></b> loop, taken <span id="snapt"></span> · <a href="../">tenkm.org</a> · <a href="https://github.com/pingdynasty/mtv">mtv on GitHub</a></div>
@@ -226,8 +265,8 @@ def page(static):
     tag = '<script src="/static/vendor/echarts.min.js"></script>'
     if tag not in h or '<body>' not in h or '<title>' not in h:
         sys.exit("build: mtv's index.html doesn't have the expected script tag, <title> or <body>; update build.py")
-    h = h.replace(tag, '<script src="vendor/echarts.min.js"></script>\n' + SHIM, 1)
-    h = h.replace('<title>', CLOCK + '<title>', 1)
+    # snapshot.js (in SHIM) must load before CLOCK, which reads the snapshot time.
+    h = h.replace(tag, '<script src="vendor/echarts.min.js"></script>\n' + SHIM + CLOCK, 1)
     h = re.sub(r'<title>[^<]*</title>', '<title>mtv demo · tenkm.org</title>\n<meta name="description" content="A read-only snapshot of a 10km agent loop in mtv, the monkey televisor.">', h, count=1)
     h = h.replace('<body>', '<body>' + BANNER, 1)
     return h
@@ -239,6 +278,7 @@ def main(argv=None):
     ap.add_argument('--mtv', help='mtv checkout (default: installed mtv)')
     ap.add_argument('--out', default=HERE, help='site folder (default: this folder)')
     ap.add_argument('--name', help='loop name shown in the demo')
+    ap.add_argument('--at', help='freeze the demo clock at this UTC time, e.g. 2026-11-20T09:24:37Z (default: the loop\'s last activity)')
     ap.add_argument('--force', action='store_true', help='write even if the secrets check finds something')
     ns = ap.parse_args(argv)
     root = os.path.abspath(os.path.expanduser(ns.root))
@@ -249,7 +289,7 @@ def main(argv=None):
     tmp = tempfile.mkdtemp(prefix='tenkm-demo-')
     try:
         logs = stage(root, tmp)
-        api = snapshot(data, tmp, root, name, logs, mtv.__version__)
+        api = snapshot(data, tmp, root, name, logs, mtv.__version__, epoch(ns.at) if ns.at else None)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     text = scrub(json.dumps(api, default=str, separators=(',', ':')), root, tmp)
@@ -273,7 +313,7 @@ def main(argv=None):
         os.remove(old)
     c = api['live']['counts']
     print(f'build: {name}: {c["cycles"]} cycles, {c["tasks"]} tasks, {c["issues"]} issues, '
-          f'{c["usage_sessions"]} sessions; {len(text) / 1e6:.1f} MB; mtv {mtv.__version__}')
+          f'{c["usage_sessions"]} sessions; clock frozen at {iso(api["snapshot_at"])}; {len(text) / 1e6:.1f} MB; mtv {mtv.__version__}')
     print(f'build: wrote {demo}/ (open demo/index.html, or serve {os.path.abspath(ns.out)})')
 
 
