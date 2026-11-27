@@ -271,8 +271,17 @@ def page(static):
     # snapshot.js (in SHIM) must load before CLOCK, which reads the snapshot time.
     h = h.replace(tag, '<script src="vendor/echarts.min.js"></script>\n' + SHIM + CLOCK, 1)
     h = re.sub(r'<title>[^<]*</title>', '<title>mtv demo · tenkm.org</title>\n<meta name="description" content="A read-only snapshot of a 10km agent loop in mtv, the monkey televisor.">', h, count=1)
+    h = re.sub(r'<link rel="icon"[^>]*>', '', h)
+    h = h.replace('</title>', '</title>\n' + ICONS, 1)
     h = h.replace('<body>', '<body>' + BANNER, 1)
     return h
+
+
+# The site's favicon, from the site root (the demo lives one level down).
+ICONS = ('<link rel="icon" href="../favicon.svg" type="image/svg+xml">\n'
+         '<link rel="icon" href="../favicon.ico" sizes="any">\n'
+         '<link rel="apple-touch-icon" href="../apple-touch-icon.png">'
+         '\n<link rel="manifest" href="../site.webmanifest">')
 
 
 def main(argv=None):
